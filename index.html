@@ -59,6 +59,22 @@ tw-sidebar {
   pointer-events: none;
 }
 
+.bg_video {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
+.intro-earth {
+  opacity: .16;
+}
+
 .nv-shade {
   position: fixed;
   inset: 0;
@@ -442,7 +458,7 @@ tw-sidebar {
   });
   document.addEventListener('DOMContentLoaded', refreshPassage);
   refreshPassage();
-})();</script><tw-passagedata pid="1" name="menu" tags="" position="800,300" size="100,100">&lt;img class=&quot;bg_image&quot; src=&quot;assets/backgrounds/menu_BG.png&quot; alt=&quot;&quot;&gt;
+})();</script><tw-passagedata pid="1" name="menu" tags="" position="800,300" size="100,100">&lt;video class=&quot;bg_video&quot; src=&quot;assets/backgrounds/menu_video.mp4&quot; poster=&quot;assets/backgrounds/menu_BG.png&quot; autoplay muted loop playsinline preload=&quot;auto&quot; aria-hidden=&quot;true&quot;&gt;&lt;/video&gt;
 &lt;div class=&quot;nv-shade&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
 
 &lt;div class=&quot;nv-screen nv-menu&quot;&gt;
@@ -481,7 +497,9 @@ tw-sidebar {
       [[НАЗАД|menu]]
     &lt;/div&gt;
   &lt;/div&gt;
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="3" name="intro_1" tags="" position="800,500" size="100,100">&lt;div class="dialogue"&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="3" name="intro_1" tags="" position="800,500" size="100,100">&lt;img class=&quot;bg_image intro-earth&quot; src=&quot;assets/backgrounds/menu_BG.png&quot; alt=&quot;&quot;&gt;
+&lt;div class=&quot;nv-shade&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
+&lt;div class="dialogue"&gt;
 	&lt;h1&gt;Космос никогда не был пустым&lt;/h1&gt;
   	&lt;p&gt;Среди бесчисленных звёзд существует Астрея — далёкий мир, жители которого давно сделали космос частью своей жизни.&lt;/p&gt;
     
@@ -489,14 +507,18 @@ tw-sidebar {
   &lt;span class="dialogue-prev"&gt;[[НАЗАД|menu]]&lt;/span&gt;
   &lt;span class="dialogue-next"&gt;[[ДАЛЕЕ|intro_2]]&lt;/span&gt;
 &lt;/div&gt;
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="4" name="intro_2" tags="" position="800,600" size="100,100">&lt;div class="dialogue"&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="4" name="intro_2" tags="" position="800,600" size="100,100">&lt;img class=&quot;bg_image intro-earth&quot; src=&quot;assets/backgrounds/menu_BG.png&quot; alt=&quot;&quot;&gt;
+&lt;div class=&quot;nv-shade&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
+&lt;div class="dialogue"&gt;
   	&lt;p&gt;Организация L.A.R.S.A. исследует неизвестные планеты и отправляет экспедиции далеко за пределы родной системы.&lt;/p&gt;
     
     &lt;div class="dialogue-nav"&gt;
   &lt;span class="dialogue-prev"&gt;[[НАЗАД|intro_1]]&lt;/span&gt;
   &lt;span class="dialogue-next"&gt;[[ДАЛЕЕ|intro_3]]&lt;/span&gt;
 &lt;/div&gt;
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="5" name="intro_3" tags="" position="800,700" size="100,100">&lt;div class="dialogue"&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="5" name="intro_3" tags="" position="800,700" size="100,100">&lt;img class=&quot;bg_image intro-earth&quot; src=&quot;assets/backgrounds/menu_BG.png&quot; alt=&quot;&quot;&gt;
+&lt;div class=&quot;nv-shade&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
+&lt;div class="dialogue"&gt;
   	&lt;p&gt;Сегодня молодой пилот Рия Пейдж отправляется в свою первую самостоятельную экспедицию.
 Её цель — далёкая голубая планета под названием Земля.&lt;/p&gt;
     
