@@ -101,12 +101,10 @@ tw-sidebar { display: none; }
 .nv-shade { position: fixed; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.1) 64%, rgba(0,0,0,.24)); pointer-events: none; }
 .nv-screen { position: relative; z-index: 1; display: flex; min-height: 100vh; align-items: center; justify-content: center; box-sizing: border-box; padding: 2rem; }
 .nv-content { width: min(34rem, 88vw); text-align: center; }
-.nv-title { margin: 0 0 .35rem; font-size: clamp(3.5rem, 7.2vw, 6.5rem); font-weight: 200; line-height: .9; letter-spacing: .14em; }
-.nv-title-letter { display: inline-block; letter-spacing: 0; background: linear-gradient(180deg,#e3e4e7 4%,#9b9da2 66%,#424449 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 1px 1px #000); opacity: 0; }
-.nv-title-entering .nv-title-letter { animation: nv-letter-arrive .85s cubic-bezier(.22,.61,.36,1) both 1; }
-.nv-title-entering .nv-title-letter:nth-child(2) { animation-delay: .12s; } .nv-title-entering .nv-title-letter:nth-child(3) { animation-delay: .24s; } .nv-title-entering .nv-title-letter:nth-child(4) { animation-delay: .36s; } .nv-title-entering .nv-title-letter:nth-child(5) { animation-delay: .48s; }
-.nv-title-ready .nv-title-letter { opacity: 1; transform: none; animation: none; filter: drop-shadow(0 1px 1px #000); }
-@keyframes nv-letter-arrive { from { opacity: 0; transform: translate(-.1em,.06em); filter: blur(1.2px); } to { opacity: 1; transform: translate(0,0); filter: drop-shadow(0 1px 1px #000); } }
+.nv-logo { display: block; width: min(34rem, 88vw); max-width: 100%; height: auto; margin: 0 auto .35rem; opacity: 0; }
+.nv-logo.nv-logo-entering { animation: nv-logo-reveal 1.6s ease-out both 1; }
+.nv-logo.nv-logo-ready { opacity: 1; animation: none; }
+@keyframes nv-logo-reveal { from { opacity: 0; transform: translateY(.25rem); } to { opacity: 1; transform: translateY(0); } }
 .nv-actions { display: flex; flex-direction: column; align-items: center; gap: .25rem; font-size: clamp(1rem,1.5vw,1.25rem); letter-spacing: .13em; }
 .nv-actions tw-link { font-weight: 200 !important; }
 .nv-menu .nv-actions tw-link { position: relative; display: inline-block; isolation: isolate; }
@@ -124,7 +122,7 @@ tw-sidebar { display: none; }
 .vn-line { margin: 0 0 1rem; font-size: clamp(1rem,1.24vw,1.1rem); line-height: 1.55; }
 .vn-controls { padding-top: .65rem; border-top: 1px solid rgba(230,230,230,.16); font-size: .75rem; letter-spacing: .18em; }
 @media (max-width:640px) { .vn-box { width: calc(100vw - 1rem); bottom: .65rem; padding: .85rem .9rem .6rem; } }
-@media (prefers-reduced-motion:reduce) { .nv-title-letter { animation: none !important; opacity: 1; transform: none; } .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { animation: none !important; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
+@media (prefers-reduced-motion:reduce) { .nv-logo { animation: none !important; opacity: 1; transform: none; } .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { animation: none !important; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
   'use strict';
   const music = new Audio('assets/music/menu_theme.ogg');
   music.loop = true;
@@ -146,13 +144,13 @@ tw-sidebar { display: none; }
   let firstAnimatedLogo = null;
   let logoHasPlayed = false;
   function syncLogo() {
-    const logo = document.querySelector('.nv-menu .nv-title');
+    const logo = document.querySelector('.nv-menu .nv-logo');
     if (!logo || logo === firstAnimatedLogo) return;
-    if (logoHasPlayed) logo.classList.add('nv-title-ready');
+    if (logoHasPlayed) logo.classList.add('nv-logo-ready');
     else {
       logoHasPlayed = true;
       firstAnimatedLogo = logo;
-      logo.classList.add('nv-title-entering');
+      logo.classList.add('nv-logo-entering');
     }
   }
   function refreshMenu() { updateMusic(); syncLogo(); }
@@ -163,7 +161,7 @@ tw-sidebar { display: none; }
 &lt;div class="nv-shade" aria-hidden="true"&gt;&lt;/div&gt;
 &lt;div class="nv-screen nv-menu"&gt;
   &lt;div class="nv-content" data-music="assets/music/menu_theme.ogg"&gt;
-    &lt;h1 class="nv-title" aria-label="LARSA"&gt;&lt;span class="nv-title-letter" aria-hidden="true"&gt;L&lt;/span&gt;&lt;span class="nv-title-letter" aria-hidden="true"&gt;A&lt;/span&gt;&lt;span class="nv-title-letter" aria-hidden="true"&gt;R&lt;/span&gt;&lt;span class="nv-title-letter" aria-hidden="true"&gt;S&lt;/span&gt;&lt;span class="nv-title-letter" aria-hidden="true"&gt;A&lt;/span&gt;&lt;/h1&gt;
+    &lt;img class=&quot;nv-logo&quot; src=&quot;assets/ui/larsa_logo_mono.png&quot; alt=&quot;LARSA&quot; width=&quot;1402&quot; height=&quot;424&quot;&gt;
     &lt;div class="nv-actions"&gt;[[ИГРАТЬ|START]]&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;</tw-passagedata><tw-passagedata pid="2" name="START" tags="" position="800,300" size="100,100">&lt;div class="vn-scene"&gt;
