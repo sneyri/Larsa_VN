@@ -864,6 +864,15 @@ tw-sidebar {
   let vnRoot = null, vnFrames = [], vnIndex = 0, vnTimer = 0, vnTyping = false, vnText = '';
   let vnBackgroundDeck = null, vnBackgroundCurrent = null, vnBackgroundPath = null, vnBackgroundRequest = 0;
   let vnState = {};
+  function retireVNBackground(image) {
+    if (!image) return;
+    image.classList.remove('is-visible');
+    image.classList.add('is-leaving');
+    image.addEventListener('transitionend', () => {
+      image.remove();
+      if (!vnBackgroundCurrent && !vnBackgroundPath) vnBackgroundDeck.hidden = true;
+    }, { once: true });
+  }
   function setVNBackground(path) {
     if (!vnBackgroundDeck) {
       vnBackgroundDeck = document.createElement('div');
@@ -877,11 +886,8 @@ tw-sidebar {
     const previous = vnBackgroundCurrent;
     if (!path) {
       vnBackgroundCurrent = null;
-      if (previous) {
-        previous.classList.remove('is-visible');
-        previous.classList.add('is-leaving');
-        previous.addEventListener('transitionend', () => previous.remove(), { once: true });
-      } else if (!vnRoot) vnBackgroundDeck.hidden = true;
+      retireVNBackground(previous);
+      if (!previous && !vnRoot) vnBackgroundDeck.hidden = true;
       return;
     }
     vnBackgroundDeck.hidden = false;
@@ -894,11 +900,7 @@ tw-sidebar {
       requestAnimationFrame(() => requestAnimationFrame(() => {
         if (request !== vnBackgroundRequest) { next.remove(); return; }
         next.classList.add('is-visible');
-        if (previous) {
-          previous.classList.remove('is-visible');
-          previous.classList.add('is-leaving');
-          previous.addEventListener('transitionend', () => previous.remove(), { once: true });
-        }
+        retireVNBackground(previous);
         vnBackgroundCurrent = next;
       }));
     }, { once: true });
@@ -997,11 +999,22 @@ tw-sidebar {
   function syncVN() {
     const passage = Array.from(document.querySelectorAll('tw-passage')).at(-1);
     const next = passage?.querySelector('.vn-scene') || null;
-    if (next === vnRoot) return;
+    const isMenuPassage = Boolean(passage?.querySelector('.nv-menu, .nv-settings'));
+    if (next === vnRoot) {
+      if (!next && isMenuPassage && vnBackgroundPath) {
+        setAmbience('none');
+        setVNBackground(null);
+      }
+      return;
+    }
     clearInterval(vnTimer);
     vnTyping = false;
     vnRoot = next;
-    if (!next) { setAmbience('none'); setVNBackground(null); return; }
+    if (!next) {
+      setAmbience('none');
+      if (isMenuPassage) setVNBackground(null);
+      return;
+    }
     vnFrames = Array.from(next.querySelectorAll('.vn-frame'));
     vnIndex = 0;
     if (vnFrames.length) renderVN();
