@@ -91,7 +91,7 @@
 </head>
 <body>
 <tw-story><noscript><tw-noscript>JavaScript needs to be enabled to play LARSA_NV.</tw-noscript></noscript></tw-story>
-<tw-storydata name="LARSA_NV" startnode="1" creator="Twine" creator-version="2.12.0" format="Harlowe" format-version="3.3.9" ifid="964EE3AD-0934-4A30-B546-D1AE17A153E3" options="" tags="" zoom="1" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">/* Общие стили LARSA_NV */
+<tw-storydata name="LARSA_NV" startnode="42" creator="Twine" creator-version="2.12.0" format="Harlowe" format-version="3.3.9" ifid="964EE3AD-0934-4A30-B546-D1AE17A153E3" options="" tags="" zoom="1" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">/* Общие стили LARSA_NV */
 html,
 body {
   width: 100%;
@@ -190,6 +190,28 @@ tw-sidebar {
 .nv-content {
   width: min(34rem, 88vw);
 }
+
+.nv-loader {
+  position: fixed;
+  z-index: 4;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  color: #e8e8e8;
+  background: rgba(0, 0, 0, .94);
+  font-family: Consolas, "Courier New", monospace !important;
+  letter-spacing: .08em;
+  transition: opacity .28s ease;
+}
+.nv-loader.is-ready { opacity: 0; pointer-events: none; }
+.nv-loader-console { width: min(42rem, 92vw); padding: clamp(1.1rem, 4vw, 2rem); border: 1px solid #ffffff5c; background: rgba(0, 0, 0, .82); box-shadow: inset 0 0 2rem #ffffff0a; }
+.nv-loader-heading { margin: 0 0 1.5rem; font-size: clamp(1rem, 2.6vw, 1.4rem); font-weight: 300; letter-spacing: .2em; }
+.nv-loader-log { min-height: 7.5rem; color: #aaa; font-size: clamp(.72rem, 1.5vw, .85rem); line-height: 1.9; overflow-wrap: anywhere; }
+.nv-loader-status { margin: 1.25rem 0 .55rem; font-size: .72rem; letter-spacing: .13em; }
+.nv-loader-track { height: 2px; background: #ffffff24; }
+.nv-loader-progress { width: 8%; height: 100%; background: #eee; box-shadow: 0 0 8px #ffffff80; transition: width .35s ease; }
+.nv-loader-route { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* Общий контейнер текста и passage-ссылок. */
 .dialogue {
@@ -773,7 +795,7 @@ tw-sidebar {
     const story = document.querySelector('tw-story');
     if (!passage || !story) return;
 
-    const shouldShowVideo = Boolean(passage.querySelector('.nv-menu, .nv-settings'));
+    const shouldShowVideo = Boolean(passage.querySelector('.nv-menu, .nv-settings, .nv-loader'));
     const passageVideo = passage.querySelector('.bg_video');
     if (!persistentBackgroundVideo && passageVideo) {
       persistentBackgroundVideo = passageVideo;
@@ -816,6 +838,93 @@ tw-sidebar {
       logo.classList.add('nv-title-reveal');
     }
     animatedMenuLogo = logo;
+  }
+
+  function syncAssetLoader() {
+    const passages = document.querySelectorAll('tw-passage');
+    const passage = passages[passages.length - 1];
+    const loader = passage?.querySelector('.nv-loader');
+    if (!loader || loader.dataset.bootStarted) return;
+    loader.dataset.bootStarted = 'true';
+
+    const log = loader.querySelector('[data-loader-log]');
+    const status = loader.querySelector('[data-loader-status]');
+    const progress = loader.querySelector('[data-loader-progress]');
+    const video = persistentBackgroundVideo || passage.querySelector('.bg_video');
+    const addLine = (text) => {
+      const row = document.createElement('div');
+      row.textContent = '> ' + text;
+      log.appendChild(row);
+    };
+    const setProgress = (value, label) => {
+      progress.style.width = value + '%';
+      status.textContent = label;
+    };
+    const enterMenu = () => passage.querySelector('.nv-loader-route tw-link')?.click();
+
+    addLine('ИНИЦИАЛИЗАЦИЯ LARSA MEDIA CORE...');
+    addLine('ИСТОЧНИК: assets/backgrounds/menu_video.mp4');
+    setProgress(18, 'ОЖИДАНИЕ ВИДЕОПОТОКА');
+
+    if (!video) {
+      addLine('ВИДЕОСЛОЙ НЕ НАЙДЕН // ЗАПУСК БЕЗ ВИДЕО');
+      setProgress(100, 'FALLBACK MODE');
+      loader.classList.add('is-ready');
+      requestAnimationFrame(enterMenu);
+      return;
+    }
+
+    let finished = false;
+    let metadataLogged = false;
+    let frameLogged = false;
+    const watchdog = setTimeout(() => finish(false), 12000);
+    const finish = (ready) => {
+      if (finished || !loader.isConnected) return;
+      finished = true;
+      clearTimeout(watchdog);
+      addLine(ready ? 'ПЕРВЫЙ КАДР ДЕКОДИРОВАН // OK' : 'ТАЙМАУТ ВИДЕО // FALLBACK');
+      setProgress(100, ready ? 'MEDIA READY // ПЕРЕХОД В МЕНЮ' : 'FALLBACK MODE // ПЕРЕХОД В МЕНЮ');
+      loader.classList.add('is-ready');
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) enterMenu();
+      else {
+        const waitForFade = () => {
+          if (!loader.isConnected) return;
+          if (Number.parseFloat(getComputedStyle(loader).opacity) <= 0.01) enterMenu();
+          else requestAnimationFrame(waitForFade);
+        };
+        requestAnimationFrame(waitForFade);
+      }
+    };
+    const frameReady = () => {
+      if (finished || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+      const showDecodedFrame = () => finish(true);
+      if (video.requestVideoFrameCallback) video.requestVideoFrameCallback(showDecodedFrame);
+      else requestAnimationFrame(() => requestAnimationFrame(showDecodedFrame));
+    };
+    const onMetadata = () => {
+      if (metadataLogged) return;
+      metadataLogged = true;
+      addLine('MP4 КОНТЕЙНЕР // ' + video.videoWidth + 'x' + video.videoHeight);
+      setProgress(48, 'ДЕКОДИРОВАНИЕ ВИДЕО');
+    };
+    const onFrameData = () => {
+      if (frameLogged) return;
+      frameLogged = true;
+      onMetadata();
+      addLine('ВИДЕОКАДР ПОЛУЧЕН // BUFFER READY');
+      setProgress(78, 'ОЖИДАНИЕ ПЕРВОГО ОТОБРАЖЕННОГО КАДРА');
+      frameReady();
+    };
+
+    video.addEventListener('loadedmetadata', onMetadata);
+    video.addEventListener('loadeddata', onFrameData);
+    video.addEventListener('playing', frameReady);
+    video.addEventListener('error', () => finish(false), { once: true });
+    if (video.readyState >= HTMLMediaElement.HAVE_METADATA) onMetadata();
+    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) onFrameData();
+    video.play().then(frameReady).catch(() => {
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) frameReady();
+    });
   }
 
 
@@ -1038,6 +1147,7 @@ tw-sidebar {
     syncControls();
     syncSceneAudio();
     syncPersistentVideo();
+    syncAssetLoader();
     syncMenuLogo();
   }
 
@@ -1067,7 +1177,7 @@ tw-sidebar {
   });
   document.addEventListener('DOMContentLoaded', refreshPassage);
   refreshPassage();
-})();</script><tw-passagedata pid="1" name="menu" tags="" position="800,300" size="100,100">&lt;video class=&quot;bg_video&quot; src=&quot;assets/backgrounds/menu_video.mp4&quot; poster=&quot;assets/backgrounds/menu_BG.png&quot; autoplay muted loop playsinline preload=&quot;auto&quot; aria-hidden=&quot;true&quot;&gt;&lt;/video&gt;
+})();</script><tw-passagedata pid="1" name="menu" tags="" position="800,300" size="100,100">&lt;video class=&quot;bg_video&quot; src=&quot;assets/backgrounds/menu_video.mp4&quot; autoplay muted loop playsinline preload=&quot;auto&quot; aria-hidden=&quot;true&quot;&gt;&lt;/video&gt;
 &lt;div class=&quot;nv-shade&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
 
 &lt;div class=&quot;nv-screen nv-menu&quot;&gt;
@@ -1079,7 +1189,7 @@ tw-sidebar {
       [[НАСТРОЙКИ|settings]]
     &lt;/div&gt;
   &lt;/div&gt;
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="2" name="settings" tags="" position="800,200" size="100,100">&lt;video class=&quot;bg_video&quot; src=&quot;assets/backgrounds/menu_video.mp4&quot; poster=&quot;assets/backgrounds/menu_BG.png&quot; autoplay muted loop playsinline preload=&quot;auto&quot; aria-hidden=&quot;true&quot;&gt;&lt;/video&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="2" name="settings" tags="" position="800,200" size="100,100">&lt;video class=&quot;bg_video&quot; src=&quot;assets/backgrounds/menu_video.mp4&quot; autoplay muted loop playsinline preload=&quot;auto&quot; aria-hidden=&quot;true&quot;&gt;&lt;/video&gt;
 &lt;div class=&quot;nv-shade&quot; aria-hidden=&quot;true&quot;&gt;&lt;/div&gt;
 
 &lt;div class=&quot;nv-screen nv-settings&quot;&gt;
@@ -3152,7 +3262,17 @@ TODO: add missing files to vnAssets in Story JavaScript. No technical notes are 
     &lt;p&gt;Рия закрывает миссию и сохраняет Землю в тайне. Путь домой остаётся возможным, пока она сама не решит, что делать дальше.&lt;/p&gt;
     &lt;div&gt;[[ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ-&gt;menu]]&lt;/div&gt;
   &lt;/section&gt;
-&lt;/div&gt;</tw-passagedata></tw-storydata>
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="42" name="BOOT" tags="" position="600,100" size="180,100">&lt;video class=&quot;bg_video&quot; src=&quot;assets/backgrounds/menu_video.mp4&quot; autoplay muted loop playsinline preload=&quot;auto&quot; aria-hidden=&quot;true&quot;&gt;&lt;/video&gt;
+&lt;div class=&quot;nv-loader&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;
+  &lt;div class=&quot;nv-loader-console&quot;&gt;
+    &lt;p class=&quot;nv-loader-heading&quot;&gt;LARSA // SYSTEM BOOT&lt;/p&gt;
+    &lt;div class=&quot;nv-loader-log&quot; data-loader-log&gt;&lt;/div&gt;
+    &lt;div class=&quot;nv-loader-status&quot; data-loader-status&gt;ОЖИДАНИЕ ВИДЕОПОТОКА&lt;/div&gt;
+    &lt;div class=&quot;nv-loader-track&quot;&gt;&lt;div class=&quot;nv-loader-progress&quot; data-loader-progress&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;nv-loader-route&quot;&gt;[[ВХОД В СИСТЕМУ-&gt;menu]]&lt;/div&gt;</tw-passagedata>
+</tw-storydata>
 <script title="Twine engine code" data-main="harlowe">(function(){"use strict";
 var require,define;!function(){var e={},r={};require=function(i){var n=e[i];return n&&(r[i]=n[1].apply(void 0,n[0].map(require)),e[i]=void 0),r[i]},(define=function(r,i,n){if("function"==typeof r)return r();e[r]=[i,n]}).amd=!0}();/*!
  * https://github.com/paulmillr/es6-shim
