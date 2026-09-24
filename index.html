@@ -101,20 +101,24 @@ tw-sidebar { display: none; }
 .nv-shade { position: fixed; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.1) 64%, rgba(0,0,0,.24)); pointer-events: none; }
 .nv-screen { position: relative; z-index: 1; display: flex; min-height: 100vh; align-items: center; justify-content: center; box-sizing: border-box; padding: 2rem; }
 .nv-content { width: min(34rem, 88vw); text-align: center; }
-.nv-logo { display: block; width: min(34rem, 88vw); max-width: 100%; height: auto; margin: 0 auto .35rem; opacity: 0; }
-.nv-logo.nv-logo-entering { animation: nv-logo-reveal 1.6s ease-out both 1; }
-.nv-logo.nv-logo-ready { opacity: 1; animation: none; }
-@keyframes nv-logo-reveal { from { opacity: 0; transform: translateY(.25rem); } to { opacity: 1; transform: translateY(0); } }
+.nv-menu { justify-content: flex-start; padding-left: clamp(2rem, 10vw, 9rem); }
+.nv-menu .nv-content { margin: 0; text-align: left; }
+.nv-logo { display: block; width: min(34rem, 88vw); max-width: 100%; height: auto; margin: 0 0 .35rem; opacity: 0; transform: translateY(.25rem); transition: opacity 1.8s cubic-bezier(.2,.65,.25,1), transform 1.8s cubic-bezier(.2,.65,.25,1); }
+.nv-logo.nv-logo-entering, .nv-logo.nv-logo-ready { opacity: 1; transform: translateY(0); }
+.nv-logo.nv-logo-ready { transition: none; }
 .nv-actions { display: flex; flex-direction: column; align-items: center; gap: .25rem; font-size: clamp(1rem,1.5vw,1.25rem); letter-spacing: .13em; }
+.nv-menu .nv-actions { align-items: flex-start; font-size: clamp(1.12rem, 1.8vw, 1.45rem); }
 .nv-actions tw-link { font-weight: 200 !important; }
 .nv-menu .nv-actions tw-link { position: relative; display: inline-block; isolation: isolate; }
 .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { content: "ИГРАТЬ"; position: absolute; inset: 0; opacity: 0; pointer-events: none; color: #fff; }
-.nv-menu .nv-actions tw-link:hover::before { opacity: .8; clip-path: inset(12% 0 58%); animation: nv-glitch-a .22s steps(2,end) infinite; }
-.nv-menu .nv-actions tw-link:hover::after { opacity: .65; clip-path: inset(62% 0 8%); animation: nv-glitch-b .19s steps(2,end) infinite; }
+.nv-menu .nv-actions tw-link:hover::before { opacity: .8; clip-path: inset(12% 0 58%); animation: nv-glitch-a .62s steps(2,end) infinite; }
+.nv-menu .nv-actions tw-link:hover::after { opacity: .65; clip-path: inset(62% 0 8%); animation: nv-glitch-b .54s steps(2,end) infinite; }
 @keyframes nv-glitch-a { 0%,100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
 @keyframes nv-glitch-b { 0%,100% { transform: translateX(2px); } 50% { transform: translateX(-2px); } }
 .nv-actions tw-link, .vn-box tw-link { color: #ddd !important; cursor: pointer; text-decoration: none !important; }
 .nv-actions tw-link:hover, .vn-box tw-link:hover { color: #fff !important; }
+.nv-menu .nv-actions tw-link { padding: .2rem .35rem; margin-left: -.35rem; border-left: 1px solid transparent; transition: color .25s ease, text-shadow .25s ease, transform .25s ease, border-color .25s ease, background-color .25s ease; }
+.nv-menu .nv-actions tw-link:hover, .nv-menu .nv-actions tw-link:focus-visible { transform: translateX(.35rem); border-left-color: rgba(255,255,255,.7); background: linear-gradient(90deg,rgba(255,255,255,.13),transparent 88%); text-shadow: 0 0 8px rgba(255,255,255,.75), 0 0 22px rgba(220,220,220,.4); outline: none; }
 .nv-content > br, .nv-content > tw-consecutive-br { display: none; }
 .vn-scene { position: fixed; inset: 0; overflow: hidden; }
 .vn-scene .bg_image { z-index: 0; }
@@ -122,7 +126,7 @@ tw-sidebar { display: none; }
 .vn-line { margin: 0 0 1rem; font-size: clamp(1rem,1.24vw,1.1rem); line-height: 1.55; }
 .vn-controls { padding-top: .65rem; border-top: 1px solid rgba(230,230,230,.16); font-size: .75rem; letter-spacing: .18em; }
 @media (max-width:640px) { .vn-box { width: calc(100vw - 1rem); bottom: .65rem; padding: .85rem .9rem .6rem; } }
-@media (prefers-reduced-motion:reduce) { .nv-logo { animation: none !important; opacity: 1; transform: none; } .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { animation: none !important; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
+@media (prefers-reduced-motion:reduce) { .nv-logo { transition: none !important; opacity: 1; transform: none; } .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { animation: none !important; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
   'use strict';
   const music = new Audio('assets/music/menu_theme.ogg');
   music.loop = true;
@@ -141,15 +145,14 @@ tw-sidebar { display: none; }
     }
     updateMusic();
   });
-  let firstAnimatedLogo = null;
-  let logoHasPlayed = false;
+  const logoState = window.__larsaLogoIntroState || (window.__larsaLogoIntroState = { played: false, firstElement: null });
   function syncLogo() {
     const logo = document.querySelector('.nv-menu .nv-logo');
-    if (!logo || logo === firstAnimatedLogo) return;
-    if (logoHasPlayed) logo.classList.add('nv-logo-ready');
+    if (!logo || logo === logoState.firstElement) return;
+    if (logoState.played) logo.classList.add('nv-logo-ready');
     else {
-      logoHasPlayed = true;
-      firstAnimatedLogo = logo;
+      logoState.played = true;
+      logoState.firstElement = logo;
       logo.classList.add('nv-logo-entering');
     }
   }
