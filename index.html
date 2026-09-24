@@ -102,11 +102,19 @@ tw-sidebar { display: none; }
 .nv-screen { position: relative; z-index: 1; display: flex; min-height: 100vh; align-items: center; justify-content: center; box-sizing: border-box; padding: 2rem; }
 .nv-content { width: min(34rem, 88vw); text-align: center; }
 .nv-title { margin: 0 0 .35rem; font-size: clamp(3.5rem, 7.2vw, 6.5rem); font-weight: 200; line-height: .9; letter-spacing: .14em; }
-.nv-title-letter { display: inline-block; letter-spacing: 0; background: linear-gradient(180deg,#e3e4e7 4%,#9b9da2 66%,#424449 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 1px 1px #000); opacity: 0; animation: nv-letter-arrive 1.55s cubic-bezier(.22,.61,.36,1) forwards; }
-.nv-title-letter:nth-child(2) { animation-delay: .4s; } .nv-title-letter:nth-child(3) { animation-delay: .8s; } .nv-title-letter:nth-child(4) { animation-delay: 1.2s; } .nv-title-letter:nth-child(5) { animation-delay: 1.6s; }
+.nv-title-letter { display: inline-block; letter-spacing: 0; background: linear-gradient(180deg,#e3e4e7 4%,#9b9da2 66%,#424449 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 1px 1px #000); opacity: 0; }
+.nv-title-entering .nv-title-letter { animation: nv-letter-arrive .85s cubic-bezier(.22,.61,.36,1) both 1; }
+.nv-title-entering .nv-title-letter:nth-child(2) { animation-delay: .12s; } .nv-title-entering .nv-title-letter:nth-child(3) { animation-delay: .24s; } .nv-title-entering .nv-title-letter:nth-child(4) { animation-delay: .36s; } .nv-title-entering .nv-title-letter:nth-child(5) { animation-delay: .48s; }
+.nv-title-ready .nv-title-letter { opacity: 1; transform: none; animation: none; filter: drop-shadow(0 1px 1px #000); }
 @keyframes nv-letter-arrive { from { opacity: 0; transform: translate(-.1em,.06em); filter: blur(1.2px); } to { opacity: 1; transform: translate(0,0); filter: drop-shadow(0 1px 1px #000); } }
 .nv-actions { display: flex; flex-direction: column; align-items: center; gap: .25rem; font-size: clamp(1rem,1.5vw,1.25rem); letter-spacing: .13em; }
 .nv-actions tw-link { font-weight: 200 !important; }
+.nv-menu .nv-actions tw-link { position: relative; display: inline-block; isolation: isolate; }
+.nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { content: "ИГРАТЬ"; position: absolute; inset: 0; opacity: 0; pointer-events: none; color: #fff; }
+.nv-menu .nv-actions tw-link:hover::before { opacity: .8; clip-path: inset(12% 0 58%); animation: nv-glitch-a .22s steps(2,end) infinite; }
+.nv-menu .nv-actions tw-link:hover::after { opacity: .65; clip-path: inset(62% 0 8%); animation: nv-glitch-b .19s steps(2,end) infinite; }
+@keyframes nv-glitch-a { 0%,100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+@keyframes nv-glitch-b { 0%,100% { transform: translateX(2px); } 50% { transform: translateX(-2px); } }
 .nv-actions tw-link, .vn-box tw-link { color: #ddd !important; cursor: pointer; text-decoration: none !important; }
 .nv-actions tw-link:hover, .vn-box tw-link:hover { color: #fff !important; }
 .nv-content > br, .nv-content > tw-consecutive-br { display: none; }
@@ -116,7 +124,7 @@ tw-sidebar { display: none; }
 .vn-line { margin: 0 0 1rem; font-size: clamp(1rem,1.24vw,1.1rem); line-height: 1.55; }
 .vn-controls { padding-top: .65rem; border-top: 1px solid rgba(230,230,230,.16); font-size: .75rem; letter-spacing: .18em; }
 @media (max-width:640px) { .vn-box { width: calc(100vw - 1rem); bottom: .65rem; padding: .85rem .9rem .6rem; } }
-@media (prefers-reduced-motion:reduce) { .nv-title-letter { animation: none; opacity: 1; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
+@media (prefers-reduced-motion:reduce) { .nv-title-letter { animation: none !important; opacity: 1; transform: none; } .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { animation: none !important; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
   'use strict';
   const music = new Audio('assets/music/menu_theme.ogg');
   music.loop = true;
@@ -135,8 +143,22 @@ tw-sidebar { display: none; }
     }
     updateMusic();
   });
-  new MutationObserver(updateMusic).observe(document.documentElement, { childList: true, subtree: true });
-  document.addEventListener('DOMContentLoaded', updateMusic);
+  let firstAnimatedLogo = null;
+  let logoHasPlayed = false;
+  function syncLogo() {
+    const logo = document.querySelector('.nv-menu .nv-title');
+    if (!logo || logo === firstAnimatedLogo) return;
+    if (logoHasPlayed) logo.classList.add('nv-title-ready');
+    else {
+      logoHasPlayed = true;
+      firstAnimatedLogo = logo;
+      logo.classList.add('nv-title-entering');
+    }
+  }
+  function refreshMenu() { updateMusic(); syncLogo(); }
+  new MutationObserver(refreshMenu).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', refreshMenu);
+  refreshMenu();
 })();</script><tw-passagedata pid="1" name="menu" tags="" position="600,300" size="100,100">&lt;video class="bg_video" src="assets/backgrounds/menu_video.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"&gt;&lt;/video&gt;
 &lt;div class="nv-shade" aria-hidden="true"&gt;&lt;/div&gt;
 &lt;div class="nv-screen nv-menu"&gt;
