@@ -96,6 +96,8 @@ html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background:
 body, tw-story, tw-passage { font-family: "Segoe UI Light", "Helvetica Neue", Arial, sans-serif !important; font-weight: 300; }
 tw-story, tw-passage { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; margin: 0; padding: 0; background: transparent !important; color: inherit; }
 tw-sidebar { display: none; }
+html, body, tw-story, tw-passage, tw-passage * { user-select: none !important; -webkit-user-select: none !important; }
+input, textarea, [contenteditable="true"] { user-select: text !important; -webkit-user-select: text !important; }
 .bg_video, .bg_image { position: fixed; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .bg_video { filter: none; }
 .nv-shade { position: fixed; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.1) 64%, rgba(0,0,0,.24)); pointer-events: none; }
@@ -106,6 +108,23 @@ tw-sidebar { display: none; }
 .nv-logo { display: block; width: min(34rem, 88vw); max-width: 100%; height: auto; margin: 0 0 .35rem; opacity: 0; transform: translateY(.25rem); transition: opacity 1.8s cubic-bezier(.2,.65,.25,1), transform 1.8s cubic-bezier(.2,.65,.25,1); }
 .nv-logo.nv-logo-entering, .nv-logo.nv-logo-ready { opacity: 1; transform: translateY(0); }
 .nv-logo.nv-logo-ready { transition: none; }
+.nv-logo.nv-logo-entering, .nv-logo.nv-logo-ready { animation: nv-logo-sway 5s ease-in-out 1.8s infinite, nv-logo-glitch 5s steps(1,end) 1.8s infinite; }
+@keyframes nv-logo-sway { 0%,100% { rotate: -.14deg; } 50% { rotate: .14deg; } }
+@keyframes nv-logo-glitch {
+  0%,79%,82%,85%,88%,91%,94%,97%,100% { clip-path: inset(0); filter: none; }
+  80% { clip-path: inset(34% 0 54%); filter: brightness(1.65) contrast(1.15); }
+  81% { clip-path: inset(0 0 0); filter: none; }
+  83% { clip-path: inset(68% 0 17%); filter: brightness(1.4); }
+  84% { clip-path: inset(0); filter: none; }
+  86% { clip-path: inset(18% 0 70%); filter: brightness(1.7); }
+  87% { clip-path: inset(0); filter: none; }
+  89% { clip-path: inset(48% 0 38%); filter: brightness(1.5); }
+  90% { clip-path: inset(0); filter: none; }
+  92% { clip-path: inset(76% 0 8%); filter: brightness(1.6); }
+  93% { clip-path: inset(0); filter: none; }
+  95% { clip-path: inset(27% 0 59%); filter: brightness(1.5); }
+  96% { clip-path: inset(0); filter: none; }
+}
 .nv-actions { display: flex; flex-direction: column; align-items: center; gap: .25rem; font-size: clamp(1rem,1.5vw,1.25rem); letter-spacing: .13em; }
 .nv-menu .nv-actions { align-items: flex-start; font-size: clamp(1.12rem, 1.8vw, 1.45rem); }
 .nv-actions tw-link { font-weight: 200 !important; }
@@ -126,7 +145,7 @@ tw-sidebar { display: none; }
 .vn-line { margin: 0 0 1rem; font-size: clamp(1rem,1.24vw,1.1rem); line-height: 1.55; }
 .vn-controls { padding-top: .65rem; border-top: 1px solid rgba(230,230,230,.16); font-size: .75rem; letter-spacing: .18em; }
 @media (max-width:640px) { .vn-box { width: calc(100vw - 1rem); bottom: .65rem; padding: .85rem .9rem .6rem; } }
-@media (prefers-reduced-motion:reduce) { .nv-logo { transition: none !important; opacity: 1; transform: none; } .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { animation: none !important; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
+@media (prefers-reduced-motion:reduce) { .nv-logo { animation: none !important; transition: none !important; opacity: 1; transform: none; rotate: none; clip-path: none; filter: none; } .nv-menu .nv-actions tw-link::before, .nv-menu .nv-actions tw-link::after { animation: none !important; } }</style><script role="script" id="twine-user-script" type="text/twine-javascript">(() => {
   'use strict';
   const music = new Audio('assets/music/menu_theme.ogg');
   music.loop = true;
